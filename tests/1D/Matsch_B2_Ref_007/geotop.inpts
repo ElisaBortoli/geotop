@@ -187,7 +187,8 @@ HeaderSpecificStorativity		=	"stor"
 HeaderKthSoilSolids			=	"Kth"
 HeaderCthSoilSolids			=	"Cth"
 HeaderSoilInitPres			= "InitPsi"
-
+HeaderSoilInitTemp 			= "InitT"
+HeaderV 				= "VanG"
 FreeDrainageAtBottom			=	0
 
 !======================================= 
