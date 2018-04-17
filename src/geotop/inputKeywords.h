@@ -12,14 +12,16 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/any.hpp>
-#include <boost/assign/std/vector.hpp>
-#include <boost/shared_ptr.hpp>
+//#include <boost/assign/std/vector.hpp>
+//#include <boost/shared_ptr.hpp>
 #include <boost/signals2/mutex.hpp>
 #include <map>
 #include <algorithm>
 #include <iterator>
 #include <string>
 #include <iostream>
+#include <memory>
+#include <vector>
 
 namespace geotop
 {
@@ -55,7 +57,7 @@ namespace geotop
        * false. False will be returned also if type of the return parameters
        * passed is not compatible with the type of the requested parameter.
        */
-      bool getAny(const std::string pName, boost::any &rValue) const
+      bool getAny(const std::string &pName, boost::any &rValue) const
       {
         std::string lName(pName);
         boost::algorithm::to_lower(lName);
@@ -83,7 +85,7 @@ namespace geotop
        * passed is not compatible with the type of the requested parameter.
        */
       template <typename T>
-      bool get(const std::string pName, T &rValue) const
+      bool get(const std::string &pName, T &rValue) const
       {
         std::string lName(pName);
         boost::algorithm::to_lower(lName);
@@ -117,7 +119,7 @@ namespace geotop
        * passed is not compatible with the type of the requested parameter.
        */
       template <typename T>
-      bool case_sensitive_get(const std::string pName, T &rValue) const
+      bool case_sensitive_get(const std::string &pName, T &rValue) const
       {
         if (not mValueMap->count(pName)) { return false; }
 
@@ -142,7 +144,7 @@ namespace geotop
        * passed is not compatible with the type of the parameter to be modifyed.
        */
       template <typename T>
-      bool set(const std::string pName, const T &pValue)
+      bool set(const std::string &pName, const T &pValue)
       {
         std::string lName(pName);
         boost::algorithm::to_lower(lName);
@@ -176,7 +178,7 @@ namespace geotop
        * @return true if the configuration file was successfully parsed,
        * otherwise return false
        */
-      bool parse(const std::string pFileName);
+      bool parse(const std::string &pFileName);
 
       /** @brief get the list of registered keywords, returned keys will be
        * lowercase
@@ -185,10 +187,9 @@ namespace geotop
       std::vector<std::string> getKeys()
       {
         std::vector<std::string> lStringV;
-        std::map<std::string, boost::any>::const_iterator lIter;
-        for (lIter = mValueMap->begin(); lIter != mValueMap->end(); lIter++)
+        for (auto lIter : *mValueMap)
           {
-            lStringV.push_back(lIter->first);
+            lStringV.emplace_back(lIter.first);
           }
         return lStringV;
       }
@@ -203,17 +204,17 @@ namespace geotop
        * return false.
        */
       template <typename T>
-      bool initValue(const std::string pName, const T &pValue)
+      bool initValue(const std::string &pName, T &&pValue)
       {
         std::string lName(pName);
         boost::algorithm::to_lower(lName);
-        (*mValueMap)[lName] = pValue;
+        (*mValueMap)[lName] = std::forward<T>(pValue);
 
         return true;
       }
 
       void init();
-      boost::shared_ptr<std::map<std::string, boost::any>> mValueMap;
+      std::shared_ptr<std::map<std::string, boost::any>> mValueMap;
     };
 
     /** @internal
@@ -222,10 +223,10 @@ namespace geotop
     class ConfigStoreSingletonFactory
     {
     public:
-      static boost::shared_ptr<ConfigStore> getInstance();
+      static std::shared_ptr<ConfigStore> getInstance();
 
     private:
-      static boost::shared_ptr<ConfigStore> mInstance;
+      static std::shared_ptr<ConfigStore> mInstance;
       static boost::signals2::mutex mMutex;
     };
 
