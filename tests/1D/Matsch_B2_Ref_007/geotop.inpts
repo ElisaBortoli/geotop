@@ -10,20 +10,20 @@ TimeStepEnergyAndWater	=	900
 InitDateDDMMYYYYhhmm	=	02/10/2009 00:00  
 EndDateDDMMYYYYhhmm	=	02/11/2009 23:00
 
-!Simulation settings
+! Simulation settings
 RecoverSim	=	0
 PointSim	=	1
 
 WaterBalance	=	1
 EnergyBalance	=	1
 
-!Dt in hours
+! Dt in hours
 DtPlotDischarge	=	1
 DtPlotBasin	=	1
 DtPlotPoint	=	1
 StandardTimeSimulation	=	1 
 
-!Catchmentcentroid(for Sun position)
+! Catchmentcentroid(for Sun position)
 Latitude	=	46.668
 Longitude	=	10.579
 
@@ -111,13 +111,13 @@ SurFlowResLand		=	0.5
 SurFlowResExp		=	0.667 
 
 !======================================= 
-!Vegetation
+! Vegetation
 !======================================= 
 !TimeDependentVegetationParameterFile	=	"vegetation_par"
 
 
 !======================================= 
-!Numerical parameters 
+! Numerical parameters 
 !======================================= 
 RichardTol				 =	1.E-7 
 MinLambdaWater				 = 	1.E-7 
@@ -195,7 +195,7 @@ FreeDrainageAtBottom			=	0
 ! FILE NAMES 
 !======================================= 
 
-! Input files 
+!------------------ INPUT files ------------------
 
 DemFile					=	"dem"
 MeteoFile				=	"meteo"
@@ -205,7 +205,7 @@ SlopeMapFile				=	"slope"
 AspectMapFile				=	"aspect"
 CurvaturesMapFile			=	"curvature" 
 
-!--- HORIZON FILES ------------------
+! Horizon files 
 HorizonMeteoStationFile	     = "horizon" 
 HeaderHorizonAngle	     = "AngleFromNorthClockwise"
 HeaderHorizonHeight	     = "HorizonHeight"
@@ -214,41 +214,48 @@ RiverNetwork		     = "net60"
 SoilMapFile		     =	"soiltype"
 SoilParFile		     =	"soil/soil"
  
-! Output files 
+!------------------ OUTPUT files ------------------
 
 ! Tabs 
-DischargeFile			=	"output-tabs/discharge"
-PointOutputFile			=	"output-tabs/point" 
-PointAll = 1
-!SnowProfileFile		=	"output-tabs/snow"
-SnowDepthLayersFile		=   "output-tabs/snowDepth"
-SnowTempProfileFile		=	"output-tabs/snowT"
-SnowLiqContentProfileFile	= 	"output-tabs/snowLiq"
-SnowIceContentProfileFile	= 	"output-tabs/snowIce"
-SnowAll = 1
-BasinOutputFile			=	"output-tabs/basin" 
-BasinAll = 1
-SoilAveragedTempProfileFile	=	"output-tabs/soilTz" 
-SoilLiqWaterPressProfileFile	=	"output-tabs/psiz" 
-SoilLiqContentProfileFile	=	"output-tabs/thetaliq" 
-SoilIceContentProfileFile	=	"output-tabs/thetaice" 
-SoilAll = 1
-! Maps
-SoilAveragedTempTensorFile	=	"maps/T"
-SoilLiqContentTensorFile	=	"maps/thetaliq"
-IceLiqContentTensorFile		=	"maps/thetaice"
-SoilLiqWaterPressTensorFile	=	"maps/psiz"
+! DischargeFile			=	"output-tabs/discharge"
+! PointOutputFile			=	"output-tabs/point" 
+! PointAll 			= 1
 
-LandSurfaceWaterDepthMapFile	=	"maps/hsup"
-WaterTableDepthMapFile		=	"maps/watertable"
+! SnowProfileFile		=	"output-tabs/snow"
+! SnowDepthLayersFile		=       "output-tabs/snowDepth"
+! SnowTempProfileFile		=	"output-tabs/snowT"
+! SnowLiqContentProfileFile	= 	"output-tabs/snowLiq"
+! SnowIceContentProfileFile	= 	"output-tabs/snowIce"
+! SnowAll 			= 1
 
-SWEMapFile			=	"maps/SWE"
-SnowDepthMapFile		=	"maps/snowdepth"
+BasinOutputFile			=	"output-tabs/basin"
+BasinAll 			= 1
 
-SurfaceHeatFluxMapFile		=	"maps/EB"
-SurfaceSensibleHeatFluxMapFile	=	"maps/H"
-SurfaceLatentHeatFluxMapFile	=	"maps/LE"
-SurfaceTempMapFile		=	"maps/Ts"
+! *************************** SOIL ***************************
+! SoilAveragedTempProfileFile	=	"output-tabs/soilTz" 
+! SoilLiqWaterPressProfileFile	=	"output-tabs/psiz" 
+! SoilLiqContentProfileFile	=	"output-tabs/thetaliq" 
+! SoilIceContentProfileFile	=	"output-tabs/thetaice" 
+! SoilAll 			= 1
+
+! *** This part can be commented since it's a 1D simulation (start) ***
+! ! Maps 
+! SoilAveragedTempTensorFile	=	"maps/T"
+! SoilLiqContentTensorFile	=	"maps/thetaliq"
+! IceLiqContentTensorFile       =	"maps/thetaice"
+! SoilLiqWaterPressTensorFile	=	"maps/psiz"
+
+! LandSurfaceWaterDepthMapFile	=	"maps/hsup"
+! WaterTableDepthMapFile	=	"maps/watertable"
+
+! SWEMapFile			=	"maps/SWE"
+! SnowDepthMapFile		=	"maps/snowdepth"
+
+! SurfaceHeatFluxMapFile		=	"maps/EB"
+! SurfaceSensibleHeatFluxMapFile	=	"maps/H"
+! SurfaceLatentHeatFluxMapFile		=	"maps/LE"
+! SurfaceTempMapFile			=	"maps/Ts"
+! *** This part can be commented since it's a 1D simulation (end) ***
 
 !======================================= 
 !=======================================
