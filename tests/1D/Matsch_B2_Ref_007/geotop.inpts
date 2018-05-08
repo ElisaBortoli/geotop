@@ -247,6 +247,8 @@ BasinAll 			= 1
 SoilAveragedTempProfileFile	=	"output-tabs/soilTz" 
 SoilLiqWaterPressProfileFile	=	"output-tabs/psiz" 
 SoilLiqContentProfileFile	=	"output-tabs/thetaliq" 
+! SoilLiqContentProfileFileWriteEnd	=	"output-tabs/thetaliqfile"
+! Keyword found in /home/elisa/Scrivania/MHPC/geotop_3.0/src/geotop/keyword.h
 SoilIceContentProfileFile	=	"output-tabs/thetaice" 
 SoilAll 			= 1
 
