@@ -195,7 +195,7 @@ FreeDrainageAtBottom			=	0
 ! FILE NAMES 
 !======================================= 
 
-!------------------ INPUT files ------------------
+!------------------------- INPUT files -------------------------
 
 DemFile					=	"dem"
 MeteoFile				=	"meteo"
@@ -214,31 +214,45 @@ RiverNetwork		     = "net60"
 SoilMapFile		     =	"soiltype"
 SoilParFile		     =	"soil/soil"
  
-!------------------ OUTPUT files ------------------
+!------------------------- OUTPUT files -------------------------
+! *************************** TABS *************************** 
+! To print one or more of the following output txt files
+! the last parameter has to be equal to 1.
+! Tabs
+DischargeFile			=	"output-tabs/discharge"
+PointOutputFile			=	"output-tabs/point"
+! PointOutputFileWriteEnd			= "output-tabs/point"
+! SoilAveragedTempProfileFileWriteEnd	= "output-tabs/soilTave"
+PointAll 			= 1
 
-! Tabs 
-! DischargeFile			=	"output-tabs/discharge"
-! PointOutputFile			=	"output-tabs/point" 
-! PointAll 			= 1
+! *************************** SNOW ***************************
+! To print one or more of the following output txt files
+! the last parameter has to be equal to 1.
+SnowProfileFile		        =	"output-tabs/snow"
+SnowDepthLayersFile		=       "output-tabs/snowDepth"
+SnowTempProfileFile		=	"output-tabs/snowT"
+SnowLiqContentProfileFile	= 	"output-tabs/snowLiq"
+SnowIceContentProfileFile	= 	"output-tabs/snowIce"
+SnowAll 			= 1
 
-! SnowProfileFile		=	"output-tabs/snow"
-! SnowDepthLayersFile		=       "output-tabs/snowDepth"
-! SnowTempProfileFile		=	"output-tabs/snowT"
-! SnowLiqContentProfileFile	= 	"output-tabs/snowLiq"
-! SnowIceContentProfileFile	= 	"output-tabs/snowIce"
-! SnowAll 			= 1
-
+! *************************** BASIN ***************************
+! In order to print "basin.txt" 
+! the last parameter has to be equal to 1.
 BasinOutputFile			=	"output-tabs/basin"
-BasinAll 			= 1
+BasinAll 			= 1 
 
 ! *************************** SOIL ***************************
-! SoilAveragedTempProfileFile	=	"output-tabs/soilTz" 
-! SoilLiqWaterPressProfileFile	=	"output-tabs/psiz" 
-! SoilLiqContentProfileFile	=	"output-tabs/thetaliq" 
-! SoilIceContentProfileFile	=	"output-tabs/thetaice" 
-! SoilAll 			= 1
+! To print one or more of the following output txt files
+! the last parameter has to be equal to 1.
+SoilAveragedTempProfileFile	=	"output-tabs/soilTz" 
+SoilLiqWaterPressProfileFile	=	"output-tabs/psiz" 
+SoilLiqContentProfileFile	=	"output-tabs/thetaliq" 
+SoilIceContentProfileFile	=	"output-tabs/thetaice" 
+SoilAll 			= 1
 
 ! *** This part can be commented since it's a 1D simulation (start) ***
+! WAIT: I discovered that 1D simulations allow the creation of maps
+! Have to read about it ...
 ! ! Maps 
 ! SoilAveragedTempTensorFile	=	"maps/T"
 ! SoilLiqContentTensorFile	=	"maps/thetaliq"
