@@ -85,3 +85,6 @@ output_maps/
 
 # Doxygen folder
 *doxygen_generated_doc/*
+
+# Ouput from IDEs
+.idea/
