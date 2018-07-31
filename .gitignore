@@ -79,3 +79,9 @@ output_tabs/*
 output_tabs/
 output_maps/*
 output_maps/
+
+# Build
+*build*
+
+# Doxygen folder
+*doxygen_generated_doc/*
