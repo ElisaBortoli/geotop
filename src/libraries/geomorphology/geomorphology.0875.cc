@@ -80,6 +80,7 @@ void sky_view_factor(Matrix<double> *sky, long N, T_INIT *UV, Matrix<double> *in
     vv.reset(new Vector<double>{N});
     deltateta=2.0*Pi/N;
 
+#pragma omp parallel for firstprivate(input, novalue, N, deltateta, convess) private(i, j, t, m, n, p, q, h, k, r, s, vvv)
     for (i=1; i<=input->nrh; i++)
     {
         for (j=1; j<=input->nch; j++)
