@@ -30,8 +30,8 @@ void sky_view_factor(Matrix<double> *sky, long N, T_INIT *UV, Matrix<double> *in
     long i,j,t,m,n,p,q,h,k,r,s; //counter
     double deltateta; //amplitude of the angles in which the horizon is divided
     std::unique_ptr<Matrix<double>> alfa; //matrices with the angles of the direction
-    std::unique_ptr<Vector<double>> vv; //vector with the view factor of the current pixel for one of the N parts
-    std::unique_ptr<Vector<double>> v; //vector with the minimum view factor of the current pixel for one of the N parts
+    double vv[N]; //vector with the view factor of the current pixel for one of the N parts
+    double v[N]; //vector with the minimum view factor of the current pixel for one of the N parts
     double vvv; //mean of the sky view for a pixel of the N parts
 
     if (sky->nrh!=input->nrh)
@@ -76,11 +76,9 @@ void sky_view_factor(Matrix<double> *sky, long N, T_INIT *UV, Matrix<double> *in
         }
     }
 
-    v.reset(new Vector<double>{N});
-    vv.reset(new Vector<double>{N});
     deltateta=2.0*Pi/N;
 
-#pragma omp parallel for firstprivate(input, novalue, N, deltateta, convess) private(i, j, t, m, n, p, q, h, k, r, s, vvv)
+#pragma omp parallel for firstprivate(input, novalue, N, deltateta, convess) private(i, j, t, m, n, p, q, h, k, r, s, v, vv, vvv)
     for (i=1; i<=input->nrh; i++)
     {
         for (j=1; j<=input->nch; j++)
@@ -89,7 +87,7 @@ void sky_view_factor(Matrix<double> *sky, long N, T_INIT *UV, Matrix<double> *in
             {
                 for (t=1; t<=N; t++)
                 {
-                    (*v)(t)=1.0;
+                    v[t]=1.0;
                 }
                 m = input->nrh -i +1;
                 n = input->nch -j +1;
@@ -107,11 +105,11 @@ void sky_view_factor(Matrix<double> *sky, long N, T_INIT *UV, Matrix<double> *in
                                 s = k-n+1;
                                 if ((*convess)(r,s)==1 && sqrt(pow_2((r-i))+pow_2((s-j)))!=0)
                                 {
-                                    (*vv)(t) = 1-sin(atan(((*input)(r,s)-(*input)(i,j))
+                                    vv[t] = 1-sin(atan(((*input)(r,s)-(*input)(i,j))
                                                          /(sqrt(pow_2((r-i))+pow_2((s-j)))*(*UV->U)(1))));
-                                    if ((*vv)(t) < (*v)(t))
+                                    if (vv[t] < v[t])
                                     {
-                                        (*v)(t) = (*vv)(t);
+                                        v[t] = vv[t];
                                     }
                                 }
                                 break;
@@ -122,7 +120,7 @@ void sky_view_factor(Matrix<double> *sky, long N, T_INIT *UV, Matrix<double> *in
                 vvv=0.0;
                 for (t=1; t<=N; t++)
                 {
-                    vvv = vvv + (*v)(t);
+                    vvv = vvv + v[t];
                 }
                 (*sky)(i,j) = (1.0/N*vvv);
             }
