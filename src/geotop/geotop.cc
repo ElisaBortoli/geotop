@@ -140,14 +140,36 @@ FOR A PARTICULAR PURPOSE.\n" << std::endl;
     geolog << "LOGFILE: " << wd << "geotop.log\n" << std::endl;
 
 #ifdef WITH_METEOIO
+
+    /** Configuring the test case for MeteoIO*/
     std::string cfgfile = "io_it.ini";
     cfgfile = wd + cfgfile;
     mio::Config cfg(cfgfile);
-
     mio::IOManager iomanager(cfg);
+
+    /** Reading DEM and writing some statistics (also about slopes)*/
     mio::DEMObject dem;
     dem.setUpdatePpt(mio::DEMObject::SLOPE);
     iomanager.readDEM(dem);
+    std::cerr << "DEM information: \n";
+
+    std::cerr << "\tmin=" << dem.grid2D.getMin() << " max=" << dem.grid2D.getMax() << " mean=" << dem.grid2D.getMean() << "\n";
+    std::cerr << "\tmin slope=" << dem.min_slope << " max slope=" << dem.max_slope << std::endl << std::endl;
+
+    /** Reading Meteo Stations file and writing some infos*/
+    mio::Date d1;
+    std::vector<mio::MeteoData> vecMeteo;
+    const double TZ = cfg.get("TIME_ZONE", "Input");
+    mio::IOUtils::convertString(d1,"2012-01-20T18:00:00", TZ);
+    iomanager.getMeteoData(d1, vecMeteo);
+
+    std::cerr << vecMeteo.size() << " stations with an average sampling rate of " << iomanager.getAvgSamplingRate()
+              << " or 1 point every " << 1./(iomanager.getAvgSamplingRate()*60.+1e-12) << " minutes\n";
+    for (unsigned int ii=0; ii < vecMeteo.size(); ii++) {
+        std::cerr << "---------- Station: " << (ii+1) << " / " << vecMeteo.size() << std::endl;
+        std::cerr << vecMeteo[ii].toString() << std::endl;
+    }
+
 #endif
 
     std::unique_ptr<ALLDATA> adt;
