@@ -27,7 +27,7 @@
 
 #include <sys/stat.h>
 #include "struct.geotop.h"
-#include "input.h"
+#include "input_meteoio.h"
 #include "output.h"
 #include "times.h"
 #include "constants.h"
