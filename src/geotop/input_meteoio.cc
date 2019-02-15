@@ -18,7 +18,7 @@
 */
 
 #include "struct.geotop.h"
-#include "input.h"
+#include "input_meteoio.h"
 #include "parameters.h"
 #include "geomorphology.0875.h"
 #include "geomorphology.h"
