@@ -40,7 +40,6 @@ output-tabs/
 output-maps/*
 output-maps/
 *.old
-input*
 failing_output
 *.log
 rec/*
