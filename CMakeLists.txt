@@ -42,7 +42,7 @@ add_executable(geotop
         src/geotop/energy.balance.cc
         src/geotop/geotop.cc
         src/geotop/indices.cc
-        src/geotop/input.cc
+        src/geotop/input_meteoio.cc
         src/geotop/meteo.cc
         src/geotop/meteodata.cc
         src/geotop/meteodistr.cc
@@ -80,7 +80,7 @@ add_executable(geotop
         src/geotop/blowingsnow.h
         src/geotop/indices.h
         src/geotop/radiation.h
-        src/geotop/input.h
+        src/geotop/input_meteoio.h
         src/geotop/energy.balance.h
         src/geotop/turbulence.h
         src/geotop/meteo.h
