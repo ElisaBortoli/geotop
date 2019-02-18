@@ -31,7 +31,7 @@ development of the Geotop model. Any feedback will be highly appreciated.
 #include "extensions.h"
 #include "times.h"
 #include "energy.balance.h"
-#include "input_meteoio.h"
+#include "meteoio_input.h"
 #include "tabs.h"
 #include "vegetation.h"
 #include "tables.h"

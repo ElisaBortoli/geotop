@@ -27,7 +27,7 @@
 
 #include <sys/stat.h>
 #include "struct.geotop.h"
-#include "input_meteoio.h"
+#include "meteoio_input.h"
 #include "output.h"
 #include "times.h"
 #include "constants.h"
@@ -139,7 +139,7 @@ FOR A PARTICULAR PURPOSE.\n" << std::endl;
     geolog << "WORKING DIRECTORY: " << wd << std::endl;
     geolog << "LOGFILE: " << wd << "geotop.log\n" << std::endl;
 
-#ifdef WITH_METEOIO
+//#ifdef WITH_METEOIO
 
     /** Configuring the test case for MeteoIO*/
     std::string cfgfile = "io_it.ini";
@@ -148,29 +148,36 @@ FOR A PARTICULAR PURPOSE.\n" << std::endl;
     mio::IOManager iomanager(cfg);
 
     /** Reading DEM and writing some statistics (also about slopes)*/
-    mio::DEMObject dem;
-    dem.setUpdatePpt(mio::DEMObject::SLOPE);
-    iomanager.readDEM(dem);
-    std::cerr << "DEM information: \n";
+//    mio::DEMObject dem;
+//    dem.setUpdatePpt(mio::DEMObject::SLOPE);
+//    iomanager.readDEM(dem);
+//    std::cerr << "DEM information: \n";
+//
+//    std::cerr << "\tmin=" << dem.grid2D.getMin() << " max=" << dem.grid2D.getMax() << " mean=" << dem.grid2D.getMean() << "\n";
+//    std::cerr << "\tmin slope=" << dem.min_slope << " max slope=" << dem.max_slope << std::endl << std::endl;
+//
+//    /** Reading Meteo Stations file and writing some infos*/
+//    mio::Date d1;
+//    std::vector<mio::MeteoData> vecMeteo;
+//    const double TZ = cfg.get("TIME_ZONE", "Input");
+//    mio::IOUtils::convertString(d1,"2012-01-20T18:00:00", TZ);
+//    iomanager.getMeteoData(d1, vecMeteo);
+//
+/** DISCOVERED from https://models.slf.ch/docserver/meteoio/html/classmio_1_1GeotopIO.html*/
+//    vector< vector<MeteoData> > vecMeteo;      //empty vector
+//    Date d1(2008,06,21,11,00);       //21.6.2008 11:00
+//    Date d2(2008,07,21,11,00);       //21.7.2008 11:00
+//    IOHandler io1("io.ini");
+//    io1.readMeteoData(d1, d2, vecMeteo);
 
-    std::cerr << "\tmin=" << dem.grid2D.getMin() << " max=" << dem.grid2D.getMax() << " mean=" << dem.grid2D.getMean() << "\n";
-    std::cerr << "\tmin slope=" << dem.min_slope << " max slope=" << dem.max_slope << std::endl << std::endl;
+//    std::cerr << vecMeteo.size() << " stations with an average sampling rate of " << iomanager.getAvgSamplingRate()
+//              << " or 1 point every " << 1./(iomanager.getAvgSamplingRate()*60.+1e-12) << " minutes\n";
+//    for (unsigned int ii=0; ii < vecMeteo.size(); ii++) {
+//        std::cerr << "---------- Station: " << (ii+1) << " / " << vecMeteo.size() << std::endl;
+//        std::cerr << vecMeteo[ii].toString() << std::endl;
+//    }
 
-    /** Reading Meteo Stations file and writing some infos*/
-    mio::Date d1;
-    std::vector<mio::MeteoData> vecMeteo;
-    const double TZ = cfg.get("TIME_ZONE", "Input");
-    mio::IOUtils::convertString(d1,"2012-01-20T18:00:00", TZ);
-    iomanager.getMeteoData(d1, vecMeteo);
-
-    std::cerr << vecMeteo.size() << " stations with an average sampling rate of " << iomanager.getAvgSamplingRate()
-              << " or 1 point every " << 1./(iomanager.getAvgSamplingRate()*60.+1e-12) << " minutes\n";
-    for (unsigned int ii=0; ii < vecMeteo.size(); ii++) {
-        std::cerr << "---------- Station: " << (ii+1) << " / " << vecMeteo.size() << std::endl;
-        std::cerr << vecMeteo[ii].toString() << std::endl;
-    }
-
-#endif
+//#endif
 
     std::unique_ptr<ALLDATA> adt;
     FILE* f;
@@ -199,8 +206,13 @@ FOR A PARTICULAR PURPOSE.\n" << std::endl;
 
 
     /*------------------    3.  Acquisition of input data and initialisation    --------------------*/
-    get_all_input(argc, argv, adt->T.get(), adt->S.get(), adt->L.get(), adt->M.get(), adt->W.get(),
-                  adt->C.get(), adt->P.get(), adt->E.get(), adt->N.get(), adt->G.get(), adt->I.get());
+//#ifdef WITH_METEOIO
+    meteoio_get_all_input(argc, argv, adt->T.get(), adt->S.get(), adt->L.get(), adt->M.get(), adt->W.get(),
+                  adt->C.get(), adt->P.get(), adt->E.get(), adt->N.get(), adt->G.get(), adt->I.get(), iomanager);
+//#else
+//    get_all_input(argc, argv, adt->T.get(), adt->S.get(), adt->L.get(), adt->M.get(), adt->W.get(),
+//                  adt->C.get(), adt->P.get(), adt->E.get(), adt->N.get(), adt->G.get(), adt->I.get());
+//#endif
 
     /*-----------------   4. Time-loop for the balances of water-mass and egy   -----------------*/
     time_loop(adt.get());

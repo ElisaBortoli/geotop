@@ -20,7 +20,7 @@
 
 
 #include "struct.geotop.h"
-#include "input_meteoio.h"
+#include "meteoio_input.h"
 #include "parameters.h"
 #include "constants.h"
 #include "tabs.h"
