@@ -42,10 +42,11 @@ add_executable(geotop
         src/geotop/energy.balance.cc
         src/geotop/geotop.cc
         src/geotop/indices.cc
-        src/geotop/input_meteoio.cc
+        src/geotop/meteoio_input.cc
         src/geotop/meteo.cc
         src/geotop/meteodata.cc
         src/geotop/meteodistr.cc
+	src/geotop/meteoio_plugin.cc
         src/geotop/output.cc
         src/geotop/parameters.cc
         src/geotop/PBSM.cc
@@ -80,7 +81,7 @@ add_executable(geotop
         src/geotop/blowingsnow.h
         src/geotop/indices.h
         src/geotop/radiation.h
-        src/geotop/input_meteoio.h
+        src/geotop/meteoio_input.h
         src/geotop/energy.balance.h
         src/geotop/turbulence.h
         src/geotop/meteo.h
@@ -117,6 +118,7 @@ add_executable(geotop
 	src/geotop/rowview.h src/geotop/matrixview.h
 	src/geotop/geotop_asserts.h
 	src/geotop/math.optim.h
+	src/geotop/meteoio_plugin.h
 	${CMAKE_BINARY_DIR}/src/geotop/version.cc)
 
 target_link_libraries(geotop ${METEOIO_LIBRARY})
