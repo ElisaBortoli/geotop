@@ -141,11 +141,11 @@ FOR A PARTICULAR PURPOSE.\n" << std::endl;
 
 //#ifdef WITH_METEOIO
 
-    /** Configuring the test case for MeteoIO*/
-    std::string cfgfile = "io_it.ini";
-    cfgfile = wd + cfgfile;
-    mio::Config cfg(cfgfile);
-    mio::IOManager iomanager(cfg);
+
+//    std::string dem_path = wd + "input_maps/pit.asc";
+//    std::cerr << "dem_path = " << dem_path << std::endl;
+//   cfg.addKey("DEMFILE", "Input", dem_path);
+//    std::cerr << cfg.toString() << std::endl;
 
     /** Reading DEM and writing some statistics (also about slopes)*/
 //    mio::DEMObject dem;
@@ -206,7 +206,14 @@ FOR A PARTICULAR PURPOSE.\n" << std::endl;
 
 
     /*------------------    3.  Acquisition of input data and initialisation    --------------------*/
+
 //#ifdef WITH_METEOIO
+    /** Configuring the test case for MeteoIO*/
+    std::string cfgfile = "io_it.ini";
+    cfgfile = wd + cfgfile;
+    mio::Config cfg(cfgfile);
+    mio::IOManager iomanager(cfg);
+
     meteoio_get_all_input(argc, argv, adt->T.get(), adt->S.get(), adt->L.get(), adt->M.get(), adt->W.get(),
                   adt->C.get(), adt->P.get(), adt->E.get(), adt->N.get(), adt->G.get(), adt->I.get(), iomanager);
 //#else
