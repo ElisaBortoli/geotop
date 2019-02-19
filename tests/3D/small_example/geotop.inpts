@@ -77,6 +77,8 @@ AspectMapFile = "input_maps/aspect"
 SoilMapFile = "input_maps/soiltype"
 !RiverNetwork = "input_maps/net_CentroCad250m_geo.asc"
 
+!CurvaturesMapFile = "curvature_map"
+
 !*******************************
 !******** LAND COVER  **********
 !*******************************
