@@ -25,7 +25,12 @@
 #define __METEOIOPLUGIN_H__
 
 #include <meteoio/MeteoIO.h>
+#include "vector.h"
+#include "matrix.h"
+#include "struct.geotop.h"
 
 void meteoio_init(mio::IOManager &io);
+
+int fill_GTmeteostations_meta(const double &JDE, mio::IOManager &iomanager, METEO *met);
 
 #endif
