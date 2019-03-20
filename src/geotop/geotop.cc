@@ -50,6 +50,7 @@
 #include <meteoio/MeteoIO.h>
 #endif
 
+
 void time_loop(ALLDATA *A);
 
 
@@ -177,8 +178,13 @@ FOR A PARTICULAR PURPOSE.\n" << std::endl;
 
 
     /*------------------    3.  Acquisition of input data and initialisation    --------------------*/
+#ifdef WITH_METEOIO
+    meteoio_get_all_input(argc, argv, adt->T.get(), adt->S.get(), adt->L.get(), adt->M.get(), adt->W.get(),
+                  adt->C.get(), adt->P.get(), adt->E.get(), adt->N.get(), adt->G.get(), adt->I.get(), iomanager);
+#else
     get_all_input(argc, argv, adt->T.get(), adt->S.get(), adt->L.get(), adt->M.get(), adt->W.get(),
                   adt->C.get(), adt->P.get(), adt->E.get(), adt->N.get(), adt->G.get(), adt->I.get());
+#endif
 
     /*-----------------   4. Time-loop for the balances of water-mass and egy   -----------------*/
     time_loop(adt.get());
