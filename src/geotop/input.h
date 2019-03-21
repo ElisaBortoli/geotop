@@ -50,11 +50,11 @@ struct INIT_TOOLS
 void meteoio_get_all_input(long argc, char *argv[], TOPO *top, SOIL *sl, LAND *land,
                    METEO *met, WATER *wat, CHANNEL *cnet,
                    PAR *par, ENERGY *egy, SNOW *snow, GLACIER *glac, TIMES *times, mio::IOManager &iomanager);
-#else
+#endif
+
 void get_all_input(long argc, char *argv[], TOPO *top, SOIL *sl, LAND *land,
                    METEO *met, WATER *wat, CHANNEL *cnet,
                    PAR *par, ENERGY *egy, SNOW *snow, GLACIER *glac, TIMES *times);
-#endif
 
 void read_inputmaps(TOPO *top, LAND *land, SOIL *sl, PAR *par, INIT_TOOLS *IT);
 
