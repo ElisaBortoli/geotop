@@ -48,8 +48,11 @@
 
 #ifdef WITH_METEOIO
 #include <meteoio/MeteoIO.h>
-#endif
 
+void meteoio_get_all_input(long argc, char *argv[], TOPO *top, SOIL *sl, LAND *land,
+                           METEO *met, WATER *wat, CHANNEL *cnet,
+                           PAR *par, ENERGY *egy, SNOW *snow, GLACIER *glac, TIMES *times, mio::IOManager &iomanager);
+#endif
 
 void time_loop(ALLDATA *A);
 
