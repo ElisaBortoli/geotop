@@ -248,8 +248,8 @@ SoilAveragedTempTensorFile = "output-maps/T"
 !  RECOVERY FILE NAMES
 !=============================================================================
 ![recovery]
-!SubfolderRecoveryFiles="rec"
-!ContinuousRecovery=15
+SubfolderRecoveryFiles="rec"
+ContinuousRecovery=0.5
 ! every x  days save the status of the simulation 
 ! when you launch it again, it starts from the last recovery
 !RunIfAnOldRunIsPresent=5
