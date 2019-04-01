@@ -1,0 +1,7 @@
+_tests = ['meteoio_01.cc']
+
+_src = ['../../../src/geotop/meteoio_wrapper.h']
+foreach _t : _tests
+    _e = executable(_t, [_t,_src], dependencies: [gtest,meteoio],  include_directories: include_dirs)
+    test(_t, _e, suite: ['unit_tests','meteoio'])
+endforeach
