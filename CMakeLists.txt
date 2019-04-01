@@ -117,6 +117,7 @@ add_executable(geotop
 	src/geotop/rowview.h src/geotop/matrixview.h
 	src/geotop/geotop_asserts.h
 	src/geotop/math.optim.h
+	src/geotop/meteoio_wrapper.h
 	${CMAKE_BINARY_DIR}/src/geotop/version.cc)
 
 target_link_libraries(geotop ${METEOIO_LIBRARY})
