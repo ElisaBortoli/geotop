@@ -66,8 +66,8 @@ TEST(Meteoio, interpolate_2D_TA){
   mio::IOUtils::convertString(enddate, cfg.get("END_DATE", "Dates"), TZ);
 
   // chosen date for interpolation
-  mio::Date chosendate(2011,10,01,02,00, TZ);
-  mio::IOUtils::convertString(chosendate,"2011-10-01T02:00:00", TZ);
+  mio::Date chosendate(2012,01,20,14,00, TZ);
+  mio::IOUtils::convertString(chosendate,"2012-01-20T14:00:00", TZ);
   
   mio::DEMObject dem;
   iomanager.readDEM(dem);
@@ -85,4 +85,37 @@ TEST(Meteoio, interpolate_2D_TA){
   //performing spatial interpolations
   iomanager.getMeteoData(chosendate, dem, mio::MeteoData::TA, tagrid);
   iomanager.write2DGrid(tagrid, mio::MeteoGrids::TA, chosendate);
+}
+
+TEST(Meteoio, interpolate_2D_PSUM){
+  MeteoioWrapper MW {};
+  mio::Config cfg(MW.cfgfile);
+  mio::IOManager iomanager(cfg);
+
+  // start and end of the simulation
+  mio::Date startdate,enddate;
+  const double TZ = cfg.get("TIME_ZONE", "Input");
+  mio::IOUtils::convertString(startdate, cfg.get("START_DATE", "Dates"), TZ);
+  mio::IOUtils::convertString(enddate, cfg.get("END_DATE", "Dates"), TZ);
+
+  // chosen date for interpolation
+  mio::Date chosendate(2012,01,20,14,00, TZ);
+  mio::IOUtils::convertString(chosendate,"2012-01-20T14:00:00", TZ);
+  
+  mio::DEMObject dem;
+  iomanager.readDEM(dem);
+
+  mio::Grid2DObject psumgrid;
+
+  // print maps at the startdate
+  iomanager.getMeteoData(startdate, dem, mio::MeteoData::PSUM, psumgrid);
+  iomanager.write2DGrid(psumgrid, mio::MeteoGrids::PSUM, startdate);
+
+  // print maps the enddate
+  iomanager.getMeteoData(enddate, dem, mio::MeteoData::PSUM, psumgrid);
+  iomanager.write2DGrid(psumgrid, mio::MeteoGrids::PSUM, enddate);
+
+  //performing spatial interpolations
+  iomanager.getMeteoData(chosendate, dem, mio::MeteoData::PSUM, psumgrid);
+  iomanager.write2DGrid(psumgrid, mio::MeteoGrids::PSUM, chosendate);
 }

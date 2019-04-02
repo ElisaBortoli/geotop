@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 #include <meteoio_wrapper.h>
+
+#include <iostream>
 #include <vector>
 
 TEST(Meteoio, print_MeteoStations_fixed_day){
