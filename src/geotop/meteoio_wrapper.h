@@ -3,7 +3,6 @@
 
 #include <meteoio/MeteoIO.h>
 #include <string>
-#include <typeinfo>
 
 class MeteoioWrapper {
   
@@ -13,11 +12,6 @@ class MeteoioWrapper {
 
   void which_cfgfile(){
     std::cout << "cfgfile = " << cfgfile << std::endl;
-  }
-
-  void print_types(){
-    std::cout << "type(wd)      = " << typeid(wd).name() << std::endl;
-    std::cout << "type(cfgfile) = " << typeid(cfgfile).name() << std::endl;
   }
 
   // mio::Config cfg(cfgfile); => perchè non va? (1)
