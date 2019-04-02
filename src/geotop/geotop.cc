@@ -156,7 +156,6 @@ FOR A PARTICULAR PURPOSE.\n" << std::endl;
 //    iomanager.readDEM(dem);
 
     MeteoioWrapper mw;
-    std::cerr << "mw.a = " << mw.a << std::endl;
 #endif
 
     std::unique_ptr<ALLDATA> adt;
