@@ -6,10 +6,8 @@
 #include <typeinfo>
 
 class MeteoioWrapper {
- private:
   
  public:
-  int a;
   std::string wd = "/home/elisa/Scrivania/MHPC/geotop_3.0/tests/3D/small_example/";
   std::string cfgfile = wd + "io_it.ini";
 
@@ -18,15 +16,13 @@ class MeteoioWrapper {
   }
 
   void print_types(){
-    std::cout << "type(wd) = " << typeid(wd).name() << std::endl;
+    std::cout << "type(wd)      = " << typeid(wd).name() << std::endl;
     std::cout << "type(cfgfile) = " << typeid(cfgfile).name() << std::endl;
   }
 
-    
   // mio::Config cfg(cfgfile); => perchè non va? (1)
   
- MeteoioWrapper():
-  a{5}{}
+  MeteoioWrapper(){};
   
 };
 
