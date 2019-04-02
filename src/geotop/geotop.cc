@@ -48,7 +48,6 @@
 
 
 #ifdef WITH_METEOIO
-//#include <meteoio/MeteoIO.h>
 #include "meteoio_wrapper.h"
 
 void meteoio_get_all_input(long argc, char *argv[], TOPO *top, SOIL *sl, LAND *land,
@@ -146,14 +145,14 @@ FOR A PARTICULAR PURPOSE.\n" << std::endl;
     geolog << "LOGFILE: " << wd << "geotop.log\n" << std::endl;
 
 #ifdef WITH_METEOIO
-//    std::string cfgfile = "io_it.ini";
-//    cfgfile = wd + cfgfile;
-//    mio::Config cfg(cfgfile);
-//
-//    mio::IOManager iomanager(cfg);
-//    mio::DEMObject dem;
-//    dem.setUpdatePpt(mio::DEMObject::SLOPE);
-//    iomanager.readDEM(dem);
+    std::string cfgfile = "io_it.ini";
+    cfgfile = wd + cfgfile;
+    mio::Config cfg(cfgfile);
+
+    mio::IOManager iomanager(cfg);
+    mio::DEMObject dem;
+    iomanager.readDEM(dem);
+    std::cerr << dem.toString() << std::endl;
 
     MeteoioWrapper mw;
 #endif
@@ -186,8 +185,8 @@ FOR A PARTICULAR PURPOSE.\n" << std::endl;
 
     /*------------------    3.  Acquisition of input data and initialisation    --------------------*/
 #ifdef WITH_METEOIO
-//    meteoio_get_all_input(argc, argv, adt->T.get(), adt->S.get(), adt->L.get(), adt->M.get(), adt->W.get(),
-//                  adt->C.get(), adt->P.get(), adt->E.get(), adt->N.get(), adt->G.get(), adt->I.get(), iomanager);
+    meteoio_get_all_input(argc, argv, adt->T.get(), adt->S.get(), adt->L.get(), adt->M.get(), adt->W.get(),
+                  adt->C.get(), adt->P.get(), adt->E.get(), adt->N.get(), adt->G.get(), adt->I.get(), iomanager);
 #else
     get_all_input(argc, argv, adt->T.get(), adt->S.get(), adt->L.get(), adt->M.get(), adt->W.get(),
                   adt->C.get(), adt->P.get(), adt->E.get(), adt->N.get(), adt->G.get(), adt->I.get());
