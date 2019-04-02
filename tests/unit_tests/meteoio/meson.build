@@ -1,4 +1,4 @@
-_tests = ['meteoio_01.cc']
+_tests = ['meteoio_01.cc', 'meteoio_02.cc']
 
 _src = ['../../../src/geotop/meteoio_wrapper.h']
 foreach _t : _tests
