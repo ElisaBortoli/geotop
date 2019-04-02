@@ -13,8 +13,6 @@ class MeteoioWrapper {
   void which_cfgfile(){
     std::cout << "cfgfile = " << cfgfile << std::endl;
   }
-
-  // mio::Config cfg(cfgfile); => perchè non va? (1)
   
   MeteoioWrapper(){};
   
