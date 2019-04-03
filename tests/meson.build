@@ -1,4 +1,5 @@
 _prefix = meson.current_source_dir()
+
 # list all the tests with the following format
 #     folder/test_name
 # each test will have the following properties:
@@ -53,7 +54,7 @@ _tests = ['1D/ARF_1D',
 
 foreach _t : _tests
     _test_prefix = _prefix+'/'+_t
-   test(_t, geotop, args:[_test_prefix], suite: _t.split('/'),
+   test(_t, geotop, args:[_test_prefix], suite: _t.split('/'), workdir: meson.current_source_dir()+'/'+_t,
         timeout: 7200) # using 1800 snow_dstr_SENSITIVITY fails ...
 endforeach
 
@@ -75,4 +76,6 @@ else
 endif
 
 
-subdir('unit_tests')
+# subdir('unit_tests')
+
+# subdir('3D/small_example')

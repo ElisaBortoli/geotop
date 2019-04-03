@@ -15,7 +15,6 @@ class MeteoioWrapper {
   }
   
   MeteoioWrapper(){};
-  
 };
 
 
