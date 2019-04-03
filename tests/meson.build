@@ -76,6 +76,5 @@ else
 endif
 
 
-# subdir('unit_tests')
+subdir('unit_tests')
 
-# subdir('3D/small_example')
