@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 
+// Data Reading
 TEST(Meteoio, which_cfgfile){
   MeteoioWrapper MW {};
   MW.which_cfgfile();
@@ -54,68 +55,55 @@ TEST(Meteoio, print_LANDUSE_map){
   std::cout << std::endl;
 }
 
-TEST(Meteoio, interpolate_2D_TA){
+TEST(Meteoio, print_MeteoStations_fixed_day){
   MeteoioWrapper MW {};
   mio::Config cfg(MW.cfgfile);
   mio::IOManager iomanager(cfg);
 
-  // start and end of the simulation
-  mio::Date startdate,enddate;
   const double TZ = cfg.get("TIME_ZONE", "Input");
-  mio::IOUtils::convertString(startdate, cfg.get("START_DATE", "Dates"), TZ);
-  mio::IOUtils::convertString(enddate, cfg.get("END_DATE", "Dates"), TZ);
+  mio::Date d1(2012,01,20,13,00,TZ);
+  mio::IOUtils::convertString(d1,"2012-01-20T13:00:00", TZ);
 
-  // chosen date for interpolation
-  mio::Date chosendate(2012,01,20,14,00, TZ);
-  mio::IOUtils::convertString(chosendate,"2012-01-20T14:00:00", TZ);
+  std::vector<mio::MeteoData> vecMeteo;
   
-  mio::DEMObject dem;
-  iomanager.readDEM(dem);
+  iomanager.getMeteoData(d1, vecMeteo);
 
-  mio::Grid2DObject tagrid;
-
-  // print maps at the startdate
-  iomanager.getMeteoData(startdate, dem, mio::MeteoData::TA, tagrid);
-  iomanager.write2DGrid(tagrid, mio::MeteoGrids::TA, startdate);
-
-  // print maps the enddate
-  iomanager.getMeteoData(enddate, dem, mio::MeteoData::TA, tagrid);
-  iomanager.write2DGrid(tagrid, mio::MeteoGrids::TA, enddate);
-
-  //performing spatial interpolations
-  iomanager.getMeteoData(chosendate, dem, mio::MeteoData::TA, tagrid);
-  iomanager.write2DGrid(tagrid, mio::MeteoGrids::TA, chosendate);
+  std::cout << vecMeteo.size()
+	    << " stations with an average sampling rate of "
+	    << iomanager.getAvgSamplingRate()
+	    << " or 1 point every " << 1./(iomanager.getAvgSamplingRate()*60.+1e-12)
+	    << " minutes" << std::endl;
+  std::cout << std::endl;
+  
+  for (unsigned int i=0; i<vecMeteo.size(); i++) {
+    std::cout << "---------- Station: " << (i+1)
+	      << " / " << vecMeteo.size() << std::endl;
+    std::cout << vecMeteo[i].toString() << std::endl;
+  }
+  std::cout << std::endl;
 }
 
-TEST(Meteoio, interpolate_2D_PSUM){
+TEST(Meteoio, print_MeteoStations_fixed_period){
   MeteoioWrapper MW {};
   mio::Config cfg(MW.cfgfile);
   mio::IOManager iomanager(cfg);
 
-  // start and end of the simulation
-  mio::Date startdate,enddate;
+  mio::Date d1,d2;
   const double TZ = cfg.get("TIME_ZONE", "Input");
-  mio::IOUtils::convertString(startdate, cfg.get("START_DATE", "Dates"), TZ);
-  mio::IOUtils::convertString(enddate, cfg.get("END_DATE", "Dates"), TZ);
-
-  // chosen date for interpolation
-  mio::Date chosendate(2012,01,20,14,00, TZ);
-  mio::IOUtils::convertString(chosendate,"2012-01-20T14:00:00", TZ);
+  mio::IOUtils::convertString(d1, cfg.get("START_DATE", "Dates"), TZ);
+  mio::IOUtils::convertString(d2, cfg.get("END_DATE", "Dates"), TZ);
   
-  mio::DEMObject dem;
-  iomanager.readDEM(dem);
+  double Tstep;
+  cfg.getValue("TSTEP", "Dates",Tstep);
+  Tstep /= 24.; // every hour
+ 
+  std::vector<mio::MeteoData> vecMeteo;
 
-  mio::Grid2DObject psumgrid;
-
-  // print maps at the startdate
-  iomanager.getMeteoData(startdate, dem, mio::MeteoData::PSUM, psumgrid);
-  iomanager.write2DGrid(psumgrid, mio::MeteoGrids::PSUM, startdate);
-
-  // print maps the enddate
-  iomanager.getMeteoData(enddate, dem, mio::MeteoData::PSUM, psumgrid);
-  iomanager.write2DGrid(psumgrid, mio::MeteoGrids::PSUM, enddate);
-
-  //performing spatial interpolations
-  iomanager.getMeteoData(chosendate, dem, mio::MeteoData::PSUM, psumgrid);
-  iomanager.write2DGrid(psumgrid, mio::MeteoGrids::PSUM, chosendate);
+  for(; d1<=d2; d1+=Tstep) {
+    iomanager.getMeteoData(d1, vecMeteo);
+    std::cout << vecMeteo[0].toString() << std::endl;
+    std::cout << "------------------------------------" << std::endl;
+  }
+  
+  std::cout << std::endl;
 }
