@@ -2,7 +2,6 @@
 #include <meteoio_wrapper.h>
 
 #include <iostream>
-#include <vector>
 
 // 2D interpolation
 TEST(Meteoio, interpolate_2D_TA){

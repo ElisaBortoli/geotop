@@ -4,12 +4,8 @@
 #include <iostream>
 #include <vector>
 
-// FILTERING NOT WORKING (METEOIO RUN TIME ERROR)
-// [ProcessingBlock.cc:182] InvalidArgumentException:
-// Wrong number of arguments for filter/processing element "MIN_MAX"
-
 // Data Filtering
-TEST(Meteoio, print_MeteoStations_fixed_period_filteringRH){
+TEST(Meteoio, print_MeteoStations_fixed_period_TA_filtered){
   MeteoioWrapper MW {};
   mio::Config cfg(MW.cfgfile);
   mio::IOManager iomanager(cfg);
@@ -25,6 +21,7 @@ TEST(Meteoio, print_MeteoStations_fixed_period_filteringRH){
  
   std::vector<mio::MeteoData> vecMeteo;
 
+  // print meteo data for station 1 (TA supposely filtered)
   for(; d1<=d2; d1+=Tstep) {
     iomanager.getMeteoData(d1, vecMeteo);
     std::cout << vecMeteo[0].toString() << std::endl;
@@ -34,4 +31,6 @@ TEST(Meteoio, print_MeteoStations_fixed_period_filteringRH){
   std::cout << std::endl;
 }
 
-
+// FILTERING NOT WORKING (METEOIO RUN TIME ERROR)
+// [ProcessingBlock.cc:182] InvalidArgumentException:
+// Wrong number of arguments for filter/processing element "MIN_MAX"
