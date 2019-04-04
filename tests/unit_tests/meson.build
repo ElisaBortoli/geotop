@@ -4,10 +4,10 @@ gtest = dependency('gtest', main: true,
 gtest_without_main = dependency('gtest', main: false,
                                 fallback : ['gtest', 'gtest_dep'],
                                 required: false)
-#ifdef WITH_METEOIO
-dirs = ['logger', 'vector', 'asserts', 'formats', 'matrix', 'tensor', 'timer', 'meteoio']
-#else
 dirs = ['logger', 'vector', 'asserts', 'formats', 'matrix', 'tensor', 'timer']
+
+#ifdef WITH_METEOIO
+dirs = dirs + ['meteoio']
 #endif
 
 if (gtest.found())
