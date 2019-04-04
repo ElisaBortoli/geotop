@@ -20,8 +20,8 @@ TEST(Meteoio, read_DEM){
 
   std::cout << "DEM information:" << std::endl;
   std::cout << "\tmin=" << dem.grid2D.getMin()
-	    << " max=" << dem.grid2D.getMax()
-	    << " mean=" << dem.grid2D.getMean() << std::endl;
+  	    << " max=" << dem.grid2D.getMax()
+  	    << " mean=" << dem.grid2D.getMean() << std::endl;
   std::cout << "\tcellsize=" << dem.cellsize << std::endl;
   std::cout << std::endl;
 }
@@ -92,6 +92,8 @@ TEST(Meteoio, print_MeteoStations_fixed_period){
   const double TZ = cfg.get("TIME_ZONE", "Input");
   mio::IOUtils::convertString(d1, cfg.get("START_DATE", "Dates"), TZ);
   mio::IOUtils::convertString(d2, cfg.get("END_DATE", "Dates"), TZ);
+  // Suggested by Mathias Bavay:
+  // const mio::Date startdate = cfg.get("START_DATE", "Dates", TZ);
   
   double Tstep;
   cfg.getValue("TSTEP", "Dates",Tstep);
