@@ -48,6 +48,7 @@
 
 #ifdef WITH_METEOIO
 #include <meteoio/MeteoIO.h>
+#include "meteoio_plugin.h"
 #endif
 
 extern long number_novalue, number_absent;
@@ -67,9 +68,477 @@ extern double elapsed_time_start, cum_time, max_time;
 //****************************************************************************************************
 //****************************************************************************************************
 #ifdef WITH_METEOIO
+void meteoio_read_inputmaps(TOPO *top, LAND *land, SOIL *sl, PAR *par, INIT_TOOLS *IT, mio::IOManager &iomanager)
+{
+    GEOLOG_PREFIX(__func__);
+
+    long r, c, i, cont;
+    std::unique_ptr<Matrix<double>> M;
+    short flag;
+    char *temp;
+    double min, max;
+    FILE *f;
+
+    /** reading TOPOGRAPHY */
+    flag = file_exists(fdem);
+    if (flag == 1)  /**keyword is present and the file exists*/
+    {
+        M.reset(new Matrix<double>{1,1});
+        top->Z0.reset(read_map(0, files[fdem], M.get(), UV, (double)number_novalue)); /** topography */
+        write_map(files[fdem], 0, par->format_out, top->Z0.get(), UV, number_novalue); /** rewrite DEM file */
+
+        // filtering
+        M.reset(new Matrix<double>{top->Z0->nrh,top->Z0->nch});
+        multipass_topofilter(par->lowpass, top->Z0.get(), M.get(), (double)number_novalue, 1); /** assign "-9999" to cell outside the domain */
+        copy_doublematrix(M.get(), top->Z0.get());
+        // write_map(files[fdem], 0, par->format_out, top->Z0, UV, number_novalue);
+
+        /** calculate East and North matrices */
+        top->East.reset(new Matrix<double>{top->Z0->nrh, top->Z0->nch});
+        top->North.reset(new Matrix<double>{top->Z0->nrh, top->Z0->nch});
+        for (r=1; r<=top->Z0->nrh; r++)
+        {
+            for (c=1; c<=top->Z0->nch; c++)
+            {
+                (*top->East)(r,c) = (*UV->U)(4) + (c-0.5)*(*UV->U)(2);
+                (*top->North)(r,c) = (*UV->U)(3) + (top->Z0->nrh-(r-0.5))*(*UV->U)(1);
+            }
+        }
+
+    }
+    else
+    {
+
+        f = fopen(FailedRunFile, "w");
+        fprintf(f, "Error: It is impossible to proceed without giving the digital elevation model\n");
+        fclose(f);
+        t_error("Fatal Error! Geotop is closed. See failing report (11).");
+
+    }
+
+    /** reading LAND COVER TYPE */
+    flag = file_exists(flu);
+    if (flag == 1) /** keyword is present and the file exists */
+    {
+        land->LC.reset(read_map(1, files[flu], top->Z0.get(), UV, (double)number_novalue));
+
+        /** check to have "-9999" along the borders */
+        for (r=1; r<=land->LC->nrh; r++) /** first and last columns fixed */
+        {
+            (*land->LC)(r,1)=(double)number_novalue;
+            (*land->LC)(r,land->LC->nch)=(double)number_novalue;
+        }
+        for (c=1; c<=land->LC->nch; c++) /** first and last rows fixed */
+        {
+            (*land->LC)(1,c)=(double)number_novalue;
+            (*land->LC)(land->LC->nrh,c)=(double)number_novalue;
+        }
+        /** chech to have coherent values of landcover ( 1 < LC < n_landuses) */
+        for (r=1; r<=land->LC->nrh; r++)
+        {
+            for (c=1; c<=land->LC->nch; c++)
+            {
+                if ((long)(*land->LC)(r,c) != number_novalue)
+                {
+                    if ((long)(*land->LC)(r,c) < 1 || (long)(*land->LC)(r,c) > par->n_landuses)
+                    {
+                        f = fopen(FailedRunFile, "w");
+                        fprintf(f, "Error: It is not possible to assign Value < 1 or > n_landuses \
+to the land cover type\n");
+                        fclose(f);
+                        t_error("Fatal Error! Geotop is closed. See failing report (12).");
+                    }
+                }
+            }
+        }
+        /** Land use is the official mask: set novalue in LC points where DTM is not available */
+        for (r=1; r<=land->LC->nrh; r++)
+        {
+            for (c=1; c<=land->LC->nch; c++)
+            {
+                if ((long)(*land->LC)(r,c)!=number_novalue)
+                {
+                    if ((long)(*top->Z0)(r,c)==number_novalue)
+                    {
+                        printf("ERROR Land use mask include DTM novalue pixels");
+                        printf("\nr:%ld c:%ld Z:%f landuse:%f\n",r,c,(*top->Z0)(r,c), (*land->LC)(r,c));
+                        (*land->LC)(r,c)=(double)number_novalue;
+                        printf("LANDUSE set at novalue where DTM is not available\n");
+                    }
+                }
+            }
+        }
+
+    }
+    else
+    {
+        printf("Land cover type assumed to be always 1\n");
+        land->LC.reset(copydoublematrix_const(1.0, top->Z0.get(), (double)number_novalue));
+
+        /** set "-9999" along the borders */
+        for (r=1; r<=land->LC->nrh; r++) /** first and last columns fixed */
+        {
+            (*land->LC)(r,1)=(double)number_novalue;
+            (*land->LC)(r,land->LC->nch)=(double)number_novalue;
+        }
+        for (c=1; c<=land->LC->nch; c++) /** first and last rows fixed */
+        {
+            (*land->LC)(1,c)=(double)number_novalue;
+            (*land->LC)(land->LC->nrh,c)=(double)number_novalue;
+        }
+    }
+    if (flag >= 0) /** keyword is present and the file can exist or not */
+        write_map(files[flu], 1, par->format_out, land->LC.get(), UV, number_novalue); /** (re)write LAND COVER file */
+
+    if (par->state_pixel == 1) /** output pixels are set */
+    {
+        par->rc.reset(new Matrix<long>{par->chkpt->nrh,2});
+        par->IDpoint.reset(new Vector<long>{par->chkpt->nrh});
+
+        for (i=1; i<=par->chkpt->nrh; i++)
+        {
+            (*par->rc)(i,1)=row((*par->chkpt)(i,ptY), top->Z0->nrh, UV, number_novalue);
+            (*par->rc)(i,2)=col((*par->chkpt)(i,ptX), top->Z0->nch, UV, number_novalue);
+
+            if ((*par->rc)(i,1) == number_novalue || (*par->rc)(i,2) == number_novalue)
+            {
+                geolog << "Point #" << i << " is out of the domain";
+
+                f = fopen(FailedRunFile, "w");
+                fprintf(f, "Point #%4ld is out of the domain",i);
+                fclose(f);
+                t_error("Fatal Error! Geotop is closed. See failing report.");
+            }
+
+            if ((long)(*land->LC)((*par->rc)(i,1),(*par->rc)(i,2))==number_novalue)
+            {
+                geolog << "Point #" << i << " corresponds to NOVALUE pixel";
+
+                f = fopen(FailedRunFile, "w");
+                fprintf(f, "Point #%4ld corresponds to NOVALUE pixel",i);
+                fclose(f);
+                t_error("Fatal Error! Geotop is closed. See failing report.");
+            }
+
+            if ((long)(*par->chkpt)(i,ptID)!=number_novalue)
+            {
+                (*par->IDpoint)(i)=(long)(*par->chkpt)(i,ptID);
+            }
+            else
+            {
+                (*par->IDpoint)(i)=i;
+            }
+        }
+    }
+
+    /*************************************************************************************************/
+    /** reading SKY VIEW FACTOR */
+    flag = file_exists(fsky);
+    if (flag == 1) /** keyword is present and the file exists */
+    {
+        top->sky.reset(read_map(2, files[fsky], land->LC.get(), UV, (double)number_novalue));
+    }
+    else
+    {
+        top->sky.reset(new Matrix<double>{top->Z0->nrh,top->Z0->nch});
+        if (par->sky == 0)
+        {
+            /** assign a constant value to sky view factor */
+            (*top->sky) = 1.;
+        }
+        else
+        {
+            /** calculate sky view factor */
+            Matrix<short> curv{top->Z0->nrh,top->Z0->nch};
+            nablaquadro_mask(top->Z0.get(), &curv, UV->U.get(), UV->V.get());
+            sky_view_factor(top->sky.get(), 36, UV, top->Z0.get(), &curv, number_novalue);
+        }
+    }
+    if (flag >= 0) /** keyword is present and the file can exist or not */
+        write_map(files[fsky], 0, par->format_out, top->sky.get(), UV, number_novalue); /** (re)write SKY VIEW FACTOR file */
+
+    /**************************************************************************************************/
+    /** reading DELAY */
+    flag = file_exists(fdelay);
+    if (flag == 1) /** keyword is present and the file exists */
+    {
+        land->delay.reset(read_map(2, files[fdelay], land->LC.get(), UV, (double)number_novalue));
+    }
+    else
+    {
+        land->delay.reset(new Matrix<double>{top->Z0->nrh,top->Z0->nch});
+    }
+    if (flag >= 0) /** keyword is present and the file can exist or not */
+        write_map(files[fdelay], 0, par->format_out, land->delay.get(), UV, number_novalue); /** (re)write DELAY file */
+
+    /**************************************************************************************************/
+    /** reading SOIL MAP */
+    flag = file_exists(fsoil);
+    if (flag == 1) /** keyword is present and the file exists */
+    {
+        M.reset(read_map(2, files[fsoil], land->LC.get(), UV, (double)number_novalue));
+        sl->type.reset(copylong_doublematrix(M.get()));
+
+        /** chech to have coherent values of soiltype ( 1 < ST < n_soiltypes) */
+        for (r=1; r<=land->LC->nrh; r++)
+        {
+            for (c=1; c<=land->LC->nch; c++)
+            {
+                if ((long)(*land->LC)(r,c) != number_novalue)
+                {
+                    if ((*sl->type)(r,c) < 1 || (*sl->type)(r,c) > par->nsoiltypes)
+                    {
+                        f = fopen(FailedRunFile, "w");
+                        fprintf(f, "Error: It is not possible to assign value < 1 or > nsoiltypes \
+to the soil type map");
+                        fclose(f);
+                        t_error("Fatal Error! Geotop is closed. See failing report (13).");
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        M.reset(copydoublematrix_const(par->soil_type_land_default, land->LC.get(), (double)number_novalue));
+        sl->type.reset(copylong_doublematrix(M.get()));
+    }
+    if (flag >= 0) /** keyword is present and the file can exist or not */
+        write_map(files[fsoil], 1, par->format_out, M.get(), UV, number_novalue); /** (re)write SOIL MAP file */
+
+    /**************************************************************************************************/
+    /** SLOPE */
+    top->dzdE.reset(new Matrix<double>{land->LC->nrh, land->LC->nch});
+    top->dzdN.reset(new Matrix<double>{land->LC->nrh, land->LC->nch});
+    find_slope((*UV->U)(1), (*UV->U)(2), top->Z0.get(), top->dzdE.get(), top->dzdN.get(), (double)number_novalue);
+
+    flag = file_exists(fslp);
+    if (flag == 1) /** keyword is present and the file exists */
+    {
+        top->slope.reset(read_map(2, files[fslp], land->LC.get(), UV, (double)number_novalue)); /** reads in degrees */
+    }
+    else
+    {
+        top->slope.reset(find_max_slope(top->Z0.get(), top->dzdE.get(), top->dzdN.get(), (double)number_novalue));
+    }
+    if (flag >= 0) /** keyword is present and the file can exist or not */
+        write_map(files[fslp], 0, par->format_out, top->slope.get(), UV, number_novalue);
+
+    find_min_max(top->slope.get(), (double)number_novalue, &max, &min);
+
+    geolog << "Slope Min:" << tan(min*GTConst::Pi/180.) << "(" << min << "deg)"
+           << "Max:" << tan(max*GTConst::Pi/180.) << "(" << max << "deg)" << std::endl;
+
+    /**************************************************************************************************/
+    /** ASPECT */
+    flag = file_exists(fasp);
+    if (flag == 1) /** keyword is present and the file exists */
+    {
+        top->aspect.reset(read_map(2, files[fasp], land->LC.get(), UV, (double)number_novalue));
+    }
+    else
+    {
+        top->aspect.reset(find_aspect(top->Z0.get(), top->dzdE.get(), top->dzdN.get(), (double)number_novalue));
+    }
+    if (flag >= 0) /** keyword is present and the file can exist or not */
+        write_map(files[fasp], 0, par->format_out, top->aspect.get(), UV, number_novalue); /** (re)write ASPECT file */
+
+    /**************************************************************************************************/
+    /** CURVATURE */
+    top->curvature1.reset(new Matrix<double>{top->Z0->nrh,top->Z0->nch});
+    top->curvature2.reset(new Matrix<double>{top->Z0->nrh,top->Z0->nch});
+    top->curvature3.reset(new Matrix<double>{top->Z0->nrh,top->Z0->nch});
+    top->curvature4.reset(new Matrix<double>{top->Z0->nrh,top->Z0->nch});
+
+    // filtering
+    M.reset(new Matrix<double>{top->Z0->nrh,top->Z0->nch});
+    multipass_topofilter(par->lowpass_curvatures, top->Z0.get(), M.get(), (double)number_novalue, 1);
+    curvature((*UV->U)(1), (*UV->U)(2), M.get(), top->curvature1.get(), top->curvature2.get(),
+              top->curvature3.get(), top->curvature4.get(), (double)number_novalue);
+
+    if (strcmp(files[fcurv], string_novalue) != 0)
+    {
+        temp = join_strings(files[fcurv], "N-S");
+        write_map(temp, 0, par->format_out, top->curvature1.get(), UV, number_novalue); /** write CURVATURE N-S file */
+        free(temp);
+
+        temp = join_strings(files[fcurv], "W-E");
+        write_map(temp, 0, par->format_out, top->curvature2.get(), UV, number_novalue); /** write CURVATURE W-E file */
+        free(temp);
+
+        temp = join_strings(files[fcurv], "NW-SE");
+        write_map(temp, 0, par->format_out, top->curvature3.get(), UV, number_novalue); /** write CURVATURE NW-SE file */
+        free(temp);
+
+        temp = join_strings(files[fcurv], "NE-SW");
+        write_map(temp, 0, par->format_out, top->curvature4.get(), UV, number_novalue); /** write CURVATURE NE-SW file */
+        free(temp);
+
+    }
+
+    find_min_max(top->curvature1.get(), (double)number_novalue, &max, &min);
+    geolog << "Curvature N-S Min:" << min << " Max:" << max << std::endl;
+
+    find_min_max(top->curvature2.get(), (double)number_novalue, &max, &min);
+    geolog << "Curvature W-E Min:" << min << " Max:" << max << std::endl;
+
+    find_min_max(top->curvature3.get(), (double)number_novalue, &max, &min);
+    geolog << "Curvature NW-SE Min:" << min << " Max:" << max << std::endl;
+
+    find_min_max(top->curvature4.get(), (double)number_novalue, &max, &min);
+    geolog << "Curvature NW-SE Min:" << min << " Max:" << max << std::endl;
+
+    /**************************************************************************************************/
+    /*
+     * CHANNEL NETWORK: if pixel_type is [TO CHECK ALL WITH TEST CASES]
+     *-1 => LAND pixel
+     *      - an incoming discharge from outside is considered (as rain/irrigation) [TO CHECK IF Qin CAN BE OF RIVER]
+     * 0 => LAND pixel
+     *      if it is on the border:
+     *      - the border is impermeable
+     *      - water is not free on the surface
+     * 1 => LAND pixel
+     *      if it is on the border
+     *      - water is free only on the surface
+     * 2 => LAND pixel
+     *      if it is on the border
+     *      - the border is permeable above an user-defined elevation in the saturated part (DepthFreeSurfaceAtTheBoundary [mm])
+     *      - weir-wise ("stramazzo")
+     * 10 => CHANNEL pixel
+     *      if it is on the border
+     *      - the border is impermeable
+     *      - water is free only on the surface
+     * 11 => CHANNEL pixel
+     *      if it is on the border
+     *      - behaves as pixel_type 1
+     * 12 => CHANNEL pixel
+     *      if it is on the border
+     *      - behaves as pixel_type 2
+    */
+    flag = file_exists(fnet);
+    if (flag == 1) /** keyword is present and the file exists */
+    {
+        M.reset(read_map(2, files[fnet], land->LC.get(), UV, (double)number_novalue));
+        top->pixel_type.reset(copyshort_doublematrix(M.get()));
+
+        cont = 0;
+        /** check that top->pixel_type assumes only the admitted values: -1, 0, 1, 2, 10, 11, 12 */
+        for (r=1; r<=top->Z0->nrh; r++)
+        {
+            for (c=1; c<=top->Z0->nch; c++)
+            {
+                if ((long)(*land->LC)(r,c)!=number_novalue)
+                {
+                    if ((*top->pixel_type)(r,c)!=0 && (*top->pixel_type)(r,c)!=1
+                        && (*top->pixel_type)(r,c)!=2 && (*top->pixel_type)(r,c)!=10
+                        && (*top->pixel_type)(r,c)!=11 && (*top->pixel_type)(r,c)!=12
+                        && (*top->pixel_type)(r,c)!=-1)
+                    {
+                        f = fopen(FailedRunFile, "w");
+                        fprintf(f, "Error: Only the following values are admitted in the network map: \
+-1, 0, 1, 2, 10\n");
+                        fclose(f);
+                        t_error("Fatal Error! Geotop is closed. See failing report (14).");
+                    }
+                    if ((*top->pixel_type)(r,c)==10)
+                        cont++;
+                }
+            }
+        }
+
+        printf("Channel networks has %ld pixels set to channel\n",cont);
+
+        if (flag >= 0)
+            write_map(files[fnet], 1, par->format_out, M.get(), UV, number_novalue);
+    }
+    else
+    {
+        top->pixel_type.reset(new Matrix<short>{land->LC->nrh, land->LC->nch});
+    }
+
+    /**************************************************************************************************/
+    /** check BORDER cells */
+    top->is_on_border.reset(new Matrix<short>{land->LC->nrh, land->LC->nch});
+    for (r=1; r<=land->LC->nrh; r++)
+    {
+        for (c=1; c<=land->LC->nch; c++)
+        {
+            if ( (long)(*land->LC)(r,c)!=number_novalue)
+            {
+                (*top->is_on_border)(r,c) = is_boundary(r, c, land->LC.get(), number_novalue);
+            }
+            else
+            {
+                (*top->is_on_border)(r,c) = -1;
+            }
+        }
+    }
+
+    /** count the pixels having pixel_type = -1, 1, 2, 11, 12 */
+    cont = 0;
+    for (r=1; r<=top->Z0->nrh; r++)
+    {
+        for (c=1; c<=top->Z0->nch; c++)
+        {
+            if ((*top->is_on_border)(r,c)==1)
+            {
+                if ((*top->pixel_type)(r,c) == -1 || (*top->pixel_type)(r,c) == 1
+                    || (*top->pixel_type)(r,c) == 2 || (*top->pixel_type)(r,c) == 11
+                    || (*top->pixel_type)(r,c) == 12)
+                    cont ++;
+            }
+        }
+    }
+
+    top->BC_counter.reset(new Matrix<long>{top->Z0->nrh, top->Z0->nch});
+
+    /** assign values to (top->BC_counter) and (top->BC_DepthFreeSurface) */
+    if (cont > 0)
+    {
+        top->BC_DepthFreeSurface.reset(new Vector<double>{cont}); /** if set to 0, drainage only from only surface flow */
+        cont = 0;
+        for (r=1; r<=top->Z0->nrh; r++)
+        {
+            for (c=1; c<=top->Z0->nch; c++)
+            {
+                if ((*top->is_on_border)(r,c)==1)
+                {
+                    if ((*top->pixel_type)(r,c) == -1 || (*top->pixel_type)(r,c) == 1
+                        || (*top->pixel_type)(r,c) == 2 || (*top->pixel_type)(r,c) == 11
+                        || (*top->pixel_type)(r,c) == 12)
+                    {
+                        cont ++;
+                        (*top->BC_counter)(r,c) = cont;
+                        (*top->BC_DepthFreeSurface)(cont) = par->DepthFreeSurface; /** [mm] */
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        top->BC_DepthFreeSurface.reset(new Vector<double>{1});
+        *(top->BC_DepthFreeSurface) = double(number_novalue);
+    }
+
+    /** BEDROCK */
+    flag = file_exists(fbed);
+    if (flag == 1) /** keyword is present and the file exists */
+    {
+        IT->bed.reset(read_map(2, files[fbed], land->LC.get(), UV, (double)number_novalue));
+    }
+    else
+    {
+        IT->bed.reset(new Matrix<double>{top->Z0->nrh, top->Z0->nch});
+        (*IT->bed) = 1.E99;
+    }
+    if (flag>=0) /** keyword is present and the file can exist or not */
+        write_map(files[fbed], 0, par->format_out, IT->bed.get(), UV, number_novalue); /** (re)write BEDROCK file */
+}
+
 void meteoio_get_all_input(long  /*argc*/, char * /*argv*/[], TOPO *top, SOIL *sl, LAND *land,
-                   METEO *met, WATER *wat, CHANNEL *cnet,
-                   PAR *par, ENERGY *egy, SNOW *snow, GLACIER *glac, TIMES *times, mio::IOManager &iomanager)
+                           METEO *met, WATER *wat, CHANNEL *cnet,
+                           PAR *par, ENERGY *egy, SNOW *snow, GLACIER *glac, TIMES *times, mio::IOManager &iomanager)
 {
     /**
      * Subroutine which
@@ -275,14 +744,24 @@ void meteoio_get_all_input(long  /*argc*/, char * /*argv*/[], TOPO *top, SOIL *s
     convert_JDfrom0_JDandYear((*par->init_date)(i_sim0), &JD, &year);
     convert_JDandYear_daymonthhourmin(JD, year, &day, &month, &hour, &minute);
 
-    i_run = i_run0;//Run index
+    i_run = i_run0; //Run index
+
+    // More input parameters for GEOtop 2.1
+//    par->cum_prec = 0;
+//    par->cum_da_up = 0;
+//    par->time_wo_prec = 0;
+//    par->evento = 0;     // false
+//    par->up_albedo = 0;  // false
+//    par->tres_wo_prec = 12 * 3600;
+
+    meteoio_init(iomanager); // the printed DEM seems turned
 
     /**************************************************************************************************/
     /*! Reading of the Input files:                                                                   */
     /**************************************************************************************************/
     if (par->point_sim!=1)  /** distributed simulation (3D) */
     {
-        read_inputmaps(top, land, sl, par, IT.get());
+        meteoio_read_inputmaps(top, land, sl, par, IT.get(), iomanager);
     }
     else /** point simulation (1D) */
     {
@@ -5328,7 +5807,6 @@ to the soil type map");
     if (flag>=0) /** keyword is present and the file can exist or not */
         write_map(files[fbed], 0, par->format_out, IT->bed.get(), UV, number_novalue); /** (re)write BEDROCK file */
 }
-
 //***************************************************************************************************
 //***************************************************************************************************
 //***************************************************************************************************
