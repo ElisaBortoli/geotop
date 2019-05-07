@@ -46,17 +46,17 @@
 #include <fstream>
 #include "timer.h"
 
-
 #ifdef WITH_METEOIO
+
 #include "meteoio_wrapper.h"
-#include <meteoio/MeteoIO.h>
+#include <vector>
 void meteoio_get_all_input(long argc, char *argv[], TOPO *top, SOIL *sl, LAND *land,
                            METEO *met, WATER *wat, CHANNEL *cnet,
                            PAR *par, ENERGY *egy, SNOW *snow, GLACIER *glac, TIMES *times, mio::IOManager &iomanager);
+void meteoio_read_inputmaps(TOPO *top, LAND *land, SOIL *sl, PAR *par, INIT_TOOLS *IT, mio::IOManager &iomanager);
 #endif
 
 void time_loop(ALLDATA *A);
-
 
 /*----------   1. Global variables  ------------*/
 
@@ -145,16 +145,14 @@ FOR A PARTICULAR PURPOSE.\n" << std::endl;
     geolog << "LOGFILE: " << wd << "geotop.log\n" << std::endl;
 
 #ifdef WITH_METEOIO
-    std::string cfgfile = "io_it.ini";
-    cfgfile = wd + cfgfile;
+    std::string cfgfile = wd + "io_it.ini";
+
+    // The following 2 lines are necessary since I'm passing iomanager to get_all_input
     mio::Config cfg(cfgfile);
-
     mio::IOManager iomanager(cfg);
-    mio::DEMObject dem;
-    iomanager.readDEM(dem);
-    std::cerr << dem.toString() << std::endl;
 
-    MeteoioWrapper mw;
+    // The following line is used in unit tests
+    MeteoioWrapper mw{cfgfile};
 #endif
 
     std::unique_ptr<ALLDATA> adt;
@@ -186,7 +184,7 @@ FOR A PARTICULAR PURPOSE.\n" << std::endl;
     /*------------------    3.  Acquisition of input data and initialisation    --------------------*/
 #ifdef WITH_METEOIO
     meteoio_get_all_input(argc, argv, adt->T.get(), adt->S.get(), adt->L.get(), adt->M.get(), adt->W.get(),
-                  adt->C.get(), adt->P.get(), adt->E.get(), adt->N.get(), adt->G.get(), adt->I.get(), iomanager);
+                          adt->C.get(), adt->P.get(), adt->E.get(), adt->N.get(), adt->G.get(), adt->I.get(), iomanager);
 #else
     get_all_input(argc, argv, adt->T.get(), adt->S.get(), adt->L.get(), adt->M.get(), adt->W.get(),
                   adt->C.get(), adt->P.get(), adt->E.get(), adt->N.get(), adt->G.get(), adt->I.get());
