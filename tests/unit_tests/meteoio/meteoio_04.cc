@@ -3,9 +3,11 @@
 
 #include <iostream>
 
+std::string cfgfile = "/home/elisa/Scrivania/MHPC/geotop_3.0/tests/3D/small_example/io_it.ini";
+
 // 2D interpolation
 TEST(Meteoio, interpolate_2D_TA){
-  MeteoioWrapper MW {};
+  MeteoioWrapper MW {cfgfile};
   mio::Config cfg(MW.cfgfile);
   mio::IOManager iomanager(cfg);
 
@@ -38,7 +40,7 @@ TEST(Meteoio, interpolate_2D_TA){
 }
 
 TEST(Meteoio, interpolate_2D_PSUM){
-  MeteoioWrapper MW {};
+  MeteoioWrapper MW {cfgfile};
   mio::Config cfg(MW.cfgfile);
   mio::IOManager iomanager(cfg);
 

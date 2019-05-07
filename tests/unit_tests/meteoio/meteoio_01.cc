@@ -4,15 +4,17 @@
 #include <iostream>
 #include <vector>
 
+std::string cfgfile = "/home/elisa/Scrivania/MHPC/geotop_3.0/tests/3D/small_example/io_it.ini";
+
 // Data Reading
 TEST(Meteoio, which_cfgfile){
-  MeteoioWrapper MW {};
+  MeteoioWrapper MW {cfgfile};
   MW.which_cfgfile();
   std::cout << std::endl;
 }
 
 TEST(Meteoio, read_DEM){
-  MeteoioWrapper MW {};
+  MeteoioWrapper MW {cfgfile};
   mio::Config cfg(MW.cfgfile);
   mio::IOManager iomanager(cfg); 
   mio::DEMObject dem;
@@ -27,7 +29,7 @@ TEST(Meteoio, read_DEM){
 }
 
 TEST(Meteoio, print_DEM_map){
-  MeteoioWrapper MW {};
+  MeteoioWrapper MW {cfgfile};
   mio::Config cfg(MW.cfgfile);
   mio::IOManager iomanager(cfg); 
   mio::DEMObject dem;
@@ -39,7 +41,7 @@ TEST(Meteoio, print_DEM_map){
 }
 
 TEST(Meteoio, print_LANDUSE_map){
-  MeteoioWrapper MW {};
+  MeteoioWrapper MW {cfgfile};
   mio::Config cfg(MW.cfgfile);
   mio::IOManager iomanager(cfg);  
   mio::Grid2DObject landuse;
@@ -56,7 +58,7 @@ TEST(Meteoio, print_LANDUSE_map){
 }
 
 TEST(Meteoio, print_MeteoStations_fixed_day){
-  MeteoioWrapper MW {};
+  MeteoioWrapper MW {cfgfile};
   mio::Config cfg(MW.cfgfile);
   mio::IOManager iomanager(cfg);
 
@@ -84,7 +86,7 @@ TEST(Meteoio, print_MeteoStations_fixed_day){
 }
 
 TEST(Meteoio, print_MeteoStations_fixed_period){
-  MeteoioWrapper MW {};
+  MeteoioWrapper MW {cfgfile};
   mio::Config cfg(MW.cfgfile);
   mio::IOManager iomanager(cfg);
 
