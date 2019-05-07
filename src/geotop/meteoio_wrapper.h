@@ -7,15 +7,16 @@
 class MeteoioWrapper {
   
  public:
-  std::string wd = "/home/elisa/Scrivania/MHPC/geotop_3.0/tests/3D/small_example/";
-  std::string cfgfile = wd + "io_it.ini";
+  std::string cfgfile;
 
   void which_cfgfile(){
     std::cout << "cfgfile = " << cfgfile << std::endl;
   }
-  
-  MeteoioWrapper(){};
-};
 
+    MeteoioWrapper(const std::string _cfgfile):
+            cfgfile{_cfgfile} {}
+
+ // MeteoioWrapper(){};
+};
 
 #endif // _GEOTOP_METEOIO_H
