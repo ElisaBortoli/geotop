@@ -22,6 +22,7 @@
 #include "turtle.h"
 #include "import_ascii.h"
 #include "extensions.h"
+#include <timer.h>
 
 #define max_figures 30
 
@@ -32,6 +33,7 @@
 double *read_grassascii(double *header, double novalue, char *name)
 
 {
+  GEOTIMER_SECTION(__func__);
   FILE *f;
   long cont,i,j,ch[max_figures],r,c,nr,nc;
   short sgn, end=0;
@@ -290,6 +292,7 @@ double *read_grassascii(double *header, double novalue, char *name)
 double *read_esriascii(double *header, double novalue, char *name)
 
 {
+  GEOTIMER_SECTION(__func__);
   FILE *f;
   long cont,i,j,ch[max_figures],r,c=0,nr,nc;
   short sgn, end=0;
