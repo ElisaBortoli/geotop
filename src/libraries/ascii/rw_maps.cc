@@ -27,7 +27,7 @@
 #include "extensions.h"
 #include "t_datamanipulation.h"
 /* #include "tensor3D.h" */
-
+#include <timer.h>
 
 /******************************************************************************************************************************************/
 /******************************************************************************************************************************************/
@@ -374,6 +374,7 @@ short existing_file_woext(char *name)
 Matrix<double>* read_map(short a, char *filename, Matrix<double> *Mref,
                          T_INIT *UVref, double no_value)
 {
+    GEOTIMER_SECTION(__func__);
 /**
  * a=0 does not use Mref, UVref output
  * a=1 does not check novalues, Mref e UVref input
