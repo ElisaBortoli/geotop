@@ -102,6 +102,7 @@ add_executable(geotop
         src/geotop/parameters.h
         src/libraries/math/util_math.h
         src/libraries/math/sparse_matrix.h
+	src/libraries/fluidturtle/turtle.h
         src/libraries/fluidturtle/t_alloc.h
         src/libraries/fluidturtle/t_datamanipulation.h
         src/libraries/fluidturtle/t_io.h
