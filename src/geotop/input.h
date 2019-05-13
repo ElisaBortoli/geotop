@@ -55,8 +55,8 @@ void read_inputmaps(TOPO *top, LAND *land, SOIL *sl, PAR *par, INIT_TOOLS *IT);
 #ifdef WITH_METEOIO
 void meteoio_get_all_input(long argc, char *argv[], TOPO *top, SOIL *sl, LAND *land,
                    METEO *met, WATER *wat, CHANNEL *cnet,
-                   PAR *par, ENERGY *egy, SNOW *snow, GLACIER *glac, TIMES *times, mio::IOManager &iomanager);
-void meteoio_read_inputmaps(TOPO *top, LAND *land, SOIL *sl, PAR *par, INIT_TOOLS *IT, mio::IOManager &iomanager);
+                   PAR *par, ENERGY *egy, SNOW *snow, GLACIER *glac, TIMES *times, mio::IOManager& iomanager);
+void meteoio_read_inputmaps(TOPO *top, LAND *land, SOIL *sl, PAR *par, INIT_TOOLS *IT, mio::IOManager& iomanager);
 #endif
 
 

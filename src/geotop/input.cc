@@ -68,7 +68,7 @@ extern double elapsed_time_start, cum_time, max_time;
 //****************************************************************************************************
 //****************************************************************************************************
 #ifdef WITH_METEOIO
-void meteoio_read_inputmaps(TOPO *top, LAND *land, SOIL *sl, PAR *par, INIT_TOOLS *IT, mio::IOManager &iomanager)
+void meteoio_read_inputmaps(TOPO *top, LAND *land, SOIL *sl, PAR *par, INIT_TOOLS *IT, mio::IOManager& iomanager)
 {
     GEOLOG_PREFIX(__func__);
 
@@ -79,23 +79,40 @@ void meteoio_read_inputmaps(TOPO *top, LAND *land, SOIL *sl, PAR *par, INIT_TOOL
     double min, max;
     FILE *f;
 
+    std::cerr << " ---------------------------------- READ DEM ---------------------------------- " << std::endl;
+    mio::Config cfg = iomanager.getConfig();
+    std::string filename_dem_path = cfg.get("DEMFILE", "Input");
+    std::string filename_dem_meteoio = mio::IOUtils::getFilename(filename_dem_path);
+    std::string filename_dem_geotop = mio::IOUtils::getFilename(std::string(files[fdem]) + ".asc");
+
+    std::cerr << "DEM FILE used by MeteoIO (defined in io_it.ini): " << filename_dem_meteoio.c_str() << std::endl;
+    std::cerr << "DEM FILE used by GEOtop   (defined in geotop.inpts): " <<  filename_dem_geotop.c_str() << std::endl;
+    if (filename_dem_meteoio != filename_dem_geotop)
+    {
+        std::cerr << " You specified two different file for DEM in two different files: please define just one" << std::endl;
+        std::cerr <<"Geotop failed." << std::endl;
+        exit(1);
+    }
+
+    mio::DEMObject dem;
+    iomanager.readDEM(dem); /** read DEM with MeteoIO */
+
+    top->Z0.reset(new Matrix<double>{dem.getNy(), dem.getNx()});
+    meteoio_copyDEM(dem, top->Z0.get()); /** copy DEM from MeteoIO to GEOtop */
+
     /** reading TOPOGRAPHY */
     flag = file_exists(fdem);
     if (flag == 1)  /**keyword is present and the file exists*/
     {
-        M.reset(new Matrix<double>{1,1});
-        top->Z0.reset(read_map(0, files[fdem], M.get(), UV, (double)number_novalue)); /** topography */
-        write_map(files[fdem], 0, par->format_out, top->Z0.get(), UV, number_novalue); /** rewrite DEM file */
-
         // filtering
         M.reset(new Matrix<double>{top->Z0->nrh,top->Z0->nch});
         multipass_topofilter(par->lowpass, top->Z0.get(), M.get(), (double)number_novalue, 1); /** assign "-9999" to cell outside the domain */
-        copy_doublematrix(M.get(), top->Z0.get());
-        // write_map(files[fdem], 0, par->format_out, top->Z0, UV, number_novalue);
+        *top->Z0 = *M;
 
         /** calculate East and North matrices */
         top->East.reset(new Matrix<double>{top->Z0->nrh, top->Z0->nch});
         top->North.reset(new Matrix<double>{top->Z0->nrh, top->Z0->nch});
+
         for (r=1; r<=top->Z0->nrh; r++)
         {
             for (c=1; c<=top->Z0->nch; c++)
@@ -104,7 +121,6 @@ void meteoio_read_inputmaps(TOPO *top, LAND *land, SOIL *sl, PAR *par, INIT_TOOL
                 (*top->North)(r,c) = (*UV->U)(3) + (top->Z0->nrh-(r-0.5))*(*UV->U)(1);
             }
         }
-
     }
     else
     {
@@ -115,6 +131,11 @@ void meteoio_read_inputmaps(TOPO *top, LAND *land, SOIL *sl, PAR *par, INIT_TOOL
         t_error("Fatal Error! Geotop is closed. See failing report (11).");
 
     }
+    std::cerr << " ---------------------------------- READ LAND COVER ----------------------------------" << std::endl;
+
+    mio::Grid2DObject landcover;
+    iomanager.read2DGrid(landcover, "landcover.asc");
+   // std::cerr << landcover.toString() << std::endl;
 
     /** reading LAND COVER TYPE */
     flag = file_exists(flu);
@@ -189,6 +210,15 @@ to the land cover type\n");
     }
     if (flag >= 0) /** keyword is present and the file can exist or not */
         write_map(files[flu], 1, par->format_out, land->LC.get(), UV, number_novalue); /** (re)write LAND COVER file */
+
+
+    for(int i=land->LC->nrl; i<=land->LC->nrh; i++){
+        for (int j=land->LC->ncl; j<=land->LC->nch; j++){
+            std::cerr << (*land->LC)(i,j) << " ";
+        }
+        std::cerr << std::endl;
+    }
+    // ---------------------------------------------------------------------------------------------------------------
 
     if (par->state_pixel == 1) /** output pixels are set */
     {
@@ -538,7 +568,7 @@ to the soil type map");
 
 void meteoio_get_all_input(long  /*argc*/, char * /*argv*/[], TOPO *top, SOIL *sl, LAND *land,
                            METEO *met, WATER *wat, CHANNEL *cnet,
-                           PAR *par, ENERGY *egy, SNOW *snow, GLACIER *glac, TIMES *times, mio::IOManager &iomanager)
+                           PAR *par, ENERGY *egy, SNOW *snow, GLACIER *glac, TIMES *times, mio::IOManager& iomanager)
 {
     /**
      * Subroutine which
@@ -754,7 +784,7 @@ void meteoio_get_all_input(long  /*argc*/, char * /*argv*/[], TOPO *top, SOIL *s
 //    par->up_albedo = 0;  // false
 //    par->tres_wo_prec = 12 * 3600;
 
-    meteoio_init(iomanager); // the printed DEM seems turned
+    //   meteoio_init(iomanager); // read io.ini file and print DEM => the printed DEM seems turned
 
     /**************************************************************************************************/
     /*! Reading of the Input files:                                                                   */
@@ -5362,7 +5392,7 @@ void read_inputmaps(TOPO *top, LAND *land, SOIL *sl, PAR *par, INIT_TOOLS *IT)
         // filtering
         M.reset(new Matrix<double>{top->Z0->nrh,top->Z0->nch});
         multipass_topofilter(par->lowpass, top->Z0.get(), M.get(), (double)number_novalue, 1); /** assign "-9999" to cell outside the domain */
-        copy_doublematrix(M.get(), top->Z0.get());
+        *top->Z0 = *M;
         // write_map(files[fdem], 0, par->format_out, top->Z0, UV, number_novalue);
 
         /** calculate East and North matrices */
@@ -5865,7 +5895,7 @@ void read_optionsfile_point(PAR *par, TOPO *top, LAND *land, SOIL *sl, TIMES * /
 
             Q.reset(new Matrix<double>{Z->nrh,Z->nch});
             multipass_topofilter(par->lowpass, Z.get(), Q.get(), (double)number_novalue, 1);
-            copy_doublematrix(Q.get(), Z.get());
+            *Z = *Q;
         }
         else
         {
