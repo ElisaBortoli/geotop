@@ -1,27 +1,45 @@
 #include "meteoio_plugin.h"
+#include "turtle.h"
+#include "vector.h"
+#include "matrix.h"
 
-mio::IOManager *io;
-mio::IOManager *io_prepocessing;
-mio::DEMObject dem;
-
-void meteoio_init(mio::IOManager &iomanager) // (1)
+extern T_INIT *UV;
+extern long number_novalue;
+// ----------------------------------------------------------------------------------------------------------------
+void copyGridToMatrix(mio::Grid2DObject& gridObject, Matrix<double>* mymatrix) // (14) copy from MeteoIO to GEOtop
 {
-    io = &iomanager;  // pointer to the iomanager instantiated in geotop.cc
-    io_prepocessing = nullptr;
-
-    std::string cfgfile = "io_it_extra.ini";
-    if (mio::IOUtils::fileExists(cfgfile))
+    /**
+     * copy map from MeteoIO to GEOtop
+     */
+    for (std::size_t i=0; i<gridObject.getNy(); i++)
     {
-        mio::Config cfg(cfgfile);
-        io_prepocessing = new mio::IOManager(cfg);
+        for (std::size_t j=0; j<gridObject.getNx(); j++)
+        {
+            if (gridObject.grid2D(j, gridObject.getNy()-1-i) == mio::IOUtils::nodata)
+            {
+                (*mymatrix)(i+1, j+1) = -9999;
+            } else
+            {
+                (*mymatrix)(i+1, j+1) = gridObject(j, gridObject.getNy()-1-i);
+            }
+        }
     }
-
-    try
-    {
-        io->readDEM(dem);
-        std::cout << dem.toString() << std::endl;
-
-    }
-    catch (std::exception &e) { std::cerr << "[ERROR] MeteoIO: " << e.what() << std::endl; }
 }
+// ----------------------------------------------------------------------------------------------------------------
+void meteoio_copyDEM(mio::DEMObject& dem, Matrix<double>* matrix) // (3)
+{
+    /**
+     * copy DEM map from MeteoIO to GEOtop
+     */
+    UV->V.reset(new Vector<double>{2});
+    (*UV->V)(1) = -1.0;
+    (*UV->V)(2) = number_novalue;  // GEOtop nodata -9999.0
 
+    UV->U.reset(new Vector<double>{4});
+    (*UV->U)(1) = dem.cellsize;
+    (*UV->U)(2) = dem.cellsize;
+    (*UV->U)(3) = dem.llcorner.getNorthing();
+    (*UV->U)(4) = dem.llcorner.getEasting();
+
+    copyGridToMatrix(dem, matrix);
+}
