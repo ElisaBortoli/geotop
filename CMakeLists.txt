@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
+LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 ###########################################################
 # general settings
@@ -77,7 +78,7 @@ ENDIF(APPLE)
 ###########################################################
 # user options
 
-SET(METEOIO_PATH "/usr/local/" CACHE PATH "location of the MeteoIO library" )
+#SET(METEOIO_PATH "/usr/local/" CACHE PATH "location of the MeteoIO library" )
 SET(BUILD_STATIC OFF CACHE BOOL "choose between static or dynamic linking")
 SET(VERBOSE OFF CACHE BOOL "enable printing of verification data")
 SET(VERY_VERBOSE OFF CACHE BOOL "enable printing of verification data")
@@ -91,14 +92,8 @@ FIND_PACKAGE(Boost REQUIRED)
 FIND_PACKAGE(Boost COMPONENTS program_options REQUIRED)
 FIND_PACKAGE(Boost COMPONENTS filesystem REQUIRED)
 FIND_PACKAGE(Boost COMPONENTS system REQUIRED)
-
-IF(NOT EXISTS "${METEOIO_PATH}/include/meteoio/MeteoIO.h")
-	MESSAGE(FATAL_ERROR "METEOIO LIBRARY NOT FOUND")
-ELSE(NOT EXISTS "${METEOIO_PATH}/include/meteoio/MeteoIO.h")
-	SET(METEOIO_LIBRARY_PATH "${METEOIO_PATH}/lib")
-	SET(METEOIO_INCLUDE_PATH "${METEOIO_PATH}/include")
-	SET(METEOIO_LIBRARIES "meteoio")
-ENDIF(NOT EXISTS "${METEOIO_PATH}/include/meteoio/MeteoIO.h")
+FIND_PACKAGE(MeteoIO REQUIRED) # it will have to be QUIET
+SET(METEOIO_INCLUDE_PATH "${METEOIO_INCLUDE_DIR}")
 
 IF(BUILD_STATIC)
   FIND_PATH(PROJ_INCLUDE_PATH "proj_api.h")
