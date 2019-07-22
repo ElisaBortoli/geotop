@@ -54,8 +54,7 @@ public:
   double **LRs;  // matrix read from the external value
   long LRsnr;    // number of lines of the matrix
   double *LRv;   // vector of interpolated values
-  double **LRc;  // cyclic values from the parameter file (one vector for each
-  // LR variable)
+  double **LRc;  // cyclic values from the parameter file (one vector for each LR variable)
   long *LRcnc;  // number of components of the vector (for each component)
   double *LRd;  // vector of default values
 
@@ -70,8 +69,7 @@ public:
   //    // tau_cloud for the chosen meteo station used to derive cloud short
   //    tau_cloud_yes; short tau_cloud_av_yes;
   GeoMatrix<double> tau_cloud;  // tau_cloud used for shortwave
-  GeoMatrix<double>
-  tau_cloud_av;  // tau_cloud used for longwave (averaged in a wider interval)
+  GeoMatrix<double> tau_cloud_av;  // tau_cloud used for longwave (averaged in a wider interval)
   GeoMatrix<short> tau_cloud_yes;  // it is read (1) or used default (0)
   GeoMatrix<short> tau_cloud_av_yes;
 

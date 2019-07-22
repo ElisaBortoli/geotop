@@ -42,6 +42,7 @@ void meteo_distr(long *line,
                  double JDbeg,
                  double JDend)
 {
+  std::cerr << "Function meteo_distr called" << std::endl;
   long r, c, year, j;
   size_t i;
   double JD;
@@ -197,13 +198,19 @@ double SatVapPressure(double T, double P)
   b = 17.502;
   c = 240.97;
   e = A * exp(b * T / (c + T));
+ // std::cerr << "I'm in SatVapPressure" << std::endl;
+//  std::cerr << "A = " << A << std::endl; // NON È ZERO
+//        std::cerr << "P = " << P << std::endl; // NON È ZERO
+//        std::cerr << "T = " << T << std::endl; // NON È ZERO
   if (e < 0.5 * P)    // vapour pressure limited to 0.5Patm
     {
+//        std::cerr << "e < 0.5 * P" << std::endl;
       return e;
     }
   else
     {
-      return 0.5 * P;
+ //       std::cerr << "e >= 0.5 * P" << std::endl;
+        return 0.5 * P;
     }
 }
 
@@ -272,9 +279,18 @@ double RHfromTdew(double T, double Tdew, double Z)
   P = pressure(Z);
   e = SatVapPressure(Tdew, P);
   es = SatVapPressure(T, P);
+//  std::cerr << "P, e, es, Tdew, P" << P << " " << e << " " << es << " " << Tdew << std::endl;
+//  std::cerr << "I'm in RHfromTdew" << std::endl;
+//  std::cerr << "(e, es) = " << e << " " << es << std::endl;
   RH = e / es;
-  if (RH > 1) RH = 1.0;
-  if (RH < 0) RH = 0.0;
+  if (RH > 1){
+      std::cerr << "RH > 1" << std::endl;
+      RH = 1.0;
+  }
+  if (RH < 0){
+      std::cerr << "RH < 0" << std::endl;
+      RH = 0.0;
+  }
   return RH;
 }
 
